@@ -1,5 +1,6 @@
 require "dry/cli"
 require "octokit"
+require "rainbow"
 
 module Deployz
   VERSION = "0.1.0"
@@ -23,27 +24,31 @@ module Deployz
       option :repos, type: :string, default: "gravity,metaphysics,force", desc: "Comma-separated list of repos"
 
       def call(repos: nil, **)
-        puts "Fetching Deploy PRs for: #{repos}"
+        puts Rainbow("Fetching Deploy PRs for: #{repos}").cyan
 
         client = Octokit::Client.new
         repo_list = repos.split(",").map(&:strip)
+        colors = [:blue, :green, :magenta]
 
-        repo_list.each do |repo|
-          puts "\n--- #{repo.upcase} ---"
+        repo_list.each_with_index do |repo, index|
+          color = colors[index % colors.length]
+          puts "\n#{Rainbow("--- #{repo.upcase} ---").color(color).bold}"
           search_query = "org:artsy repo:artsy/#{repo} is:pr in:title Deploy"
 
           begin
             results = client.search_issues(search_query, sort: "created", order: "desc")
 
             if results.items.empty?
-              puts "No Deploy PRs found"
+              puts Rainbow("  No Deploy PRs found").yellow
             else
               results.items.first(10).each do |pr|
-                puts "#{pr.title} (##{pr.number}) - #{pr.created_at.strftime("%Y-%m-%d %H:%M")}"
+                pr_number = Rainbow("(##{pr.number})").bright.color(color)
+                date = Rainbow(pr.created_at.strftime("%Y-%m-%d %H:%M")).faint
+                puts "  #{pr.title} #{pr_number} - #{date}"
               end
             end
           rescue Octokit::Error => e
-            puts "Error fetching PRs for #{repo}: #{e.message}"
+            puts Rainbow("  Error fetching PRs for #{repo}: #{e.message}").red
           end
         end
       end
