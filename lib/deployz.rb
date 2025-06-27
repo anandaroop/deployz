@@ -21,12 +21,18 @@ module Deployz
     class List < Dry::CLI::Command
       desc "List recent Deploy PRs for Artsy repos"
 
-      option :repos, type: :string, default: "metaphysics,force", desc: "Comma-separated list of repos"
+      option :repos, type: :string, default: "gravity,metaphysics,force", desc: "Comma-separated list of repos"
 
       def call(repos: nil, **)
         puts Rainbow("Fetching Deploy PRs for: #{repos}").cyan
 
-        client = Octokit::Client.new
+        token = ENV["GITHUB_TOKEN"]
+        if token
+          client = Octokit::Client.new(access_token: token)
+        else
+          puts Rainbow("Warning: No GITHUB_TOKEN found. Private repos may not be accessible.").yellow
+          client = Octokit::Client.new
+        end
         repo_list = repos.split(",").map(&:strip)
         colors = [:blue, :green, :magenta]
 
@@ -48,7 +54,11 @@ module Deployz
               end
             end
           rescue Octokit::Error => e
-            puts Rainbow("  Error fetching PRs for #{repo}: #{e.message}").red
+            if e.message.include?("permission") || e.message.include?("cannot be searched")
+              puts Rainbow("  Private repo - requires GITHUB_TOKEN with access").yellow
+            else
+              puts Rainbow("  Error fetching PRs for #{repo}: #{e.message}").red
+            end
           end
         end
       end
