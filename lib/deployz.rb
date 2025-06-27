@@ -42,9 +42,9 @@ module Deployz
               puts Rainbow("  No Deploy PRs found").yellow
             else
               results.items.first(10).each do |pr|
-                pr_number = Rainbow("(##{pr.number})").bright.color(color)
+                pr_url = Rainbow(pr.html_url).bright.color(color)
                 date = Rainbow(pr.created_at.strftime("%Y-%m-%d %H:%M")).faint
-                puts "  #{pr.title} #{pr_number} - #{date}"
+                puts "  #{date} - #{pr.title} #{pr_url}"
               end
             end
           rescue Octokit::Error => e
