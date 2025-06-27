@@ -21,7 +21,7 @@ module Deployz
     class List < Dry::CLI::Command
       desc "List recent Deploy PRs for Artsy repos"
 
-      option :repos, type: :string, default: "gravity,metaphysics,force", desc: "Comma-separated list of repos"
+      option :repos, type: :string, default: "metaphysics,force", desc: "Comma-separated list of repos"
 
       def call(repos: nil, **)
         puts Rainbow("Fetching Deploy PRs for: #{repos}").cyan
@@ -33,7 +33,7 @@ module Deployz
         repo_list.each_with_index do |repo, index|
           color = colors[index % colors.length]
           puts "\n#{Rainbow("--- #{repo.upcase} ---").color(color).bold}"
-          search_query = "org:artsy repo:artsy/#{repo} is:pr in:title Deploy"
+          search_query = "repo:artsy/#{repo} is:pr in:title Deploy"
 
           begin
             results = client.search_issues(search_query, sort: "created", order: "desc")
