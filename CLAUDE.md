@@ -13,7 +13,7 @@ It provides a terminal-friendly and easily grokked alternative to visiting an UR
 ## Conventions
 
 - No fancy metaprogramming
-- Lint after each change
+- Lint after each change, and use autofixing
 - Use convention commit formatting for commit messages
 
 ## Example session
