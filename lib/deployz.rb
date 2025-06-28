@@ -87,6 +87,12 @@ module Deployz
           "force" => :magenta
         }
 
+        indent_size = 12
+        repo_indents = {}
+        repo_list.each_with_index do |repo, index|
+          repo_indents[repo] = " " * (indent_size * (index + 1))
+        end
+
         all_prs = []
 
         repo_list.each do |repo|
@@ -99,7 +105,8 @@ module Deployz
               all_prs << {
                 repo: repo,
                 pr: pr,
-                color: repo_colors[repo] || :white
+                color: repo_colors[repo] || :white,
+                indent: repo_indents[repo] || ""
               }
             end
           rescue Octokit::Error => e
@@ -120,6 +127,7 @@ module Deployz
         all_prs.each do |item|
           pr = item[:pr]
           color = item[:color]
+          indent = item[:indent]
 
           pr_date = pr.created_at.strftime("%Y-%m-%d")
           if current_date != pr_date
@@ -129,8 +137,7 @@ module Deployz
 
           time = pr.created_at.strftime("%H:%M")
 
-          puts "#{Rainbow(time).faint} #{Rainbow(pr.html_url).color(color).bright}"
-          puts
+          puts "#{Rainbow(time).faint}#{indent}#{Rainbow(pr.html_url).color(color).bright}"
         end
 
         if all_prs.empty?
