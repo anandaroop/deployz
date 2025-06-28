@@ -8,6 +8,21 @@ module Deployz
   module Commands
     extend Dry::CLI::Registry
 
+    def self.get_repos_input
+      print "Which repos? (default: gravity metaphysics force): "
+      input = $stdin.gets.chomp
+      input.empty? ? "gravity metaphysics force" : input
+    end
+
+    def self.generate_colors_for_repos(repo_list)
+      colors = [:blue, :green, :magenta, :cyan, :yellow, :red, :white]
+      color_map = {}
+      repo_list.each_with_index do |repo, index|
+        color_map[repo] = colors[index % colors.length]
+      end
+      color_map
+    end
+
     class Default < Dry::CLI::Command
       desc "Show recent deployments for Artsy repos"
 
@@ -21,9 +36,8 @@ module Deployz
     class List < Dry::CLI::Command
       desc "List recent Deploy PRs for Artsy repos"
 
-      option :repos, type: :string, default: "gravity,metaphysics,force", desc: "Comma-separated list of repos"
-
-      def call(repos: nil, **)
+      def call(**)
+        repos = Commands.get_repos_input
         puts Rainbow("Fetching Deploy PRs for: #{repos}").cyan
 
         token = ENV["GITHUB_TOKEN"]
@@ -33,11 +47,11 @@ module Deployz
           puts Rainbow("Warning: No GITHUB_TOKEN found. Private repos may not be accessible.").yellow
           client = Octokit::Client.new
         end
-        repo_list = repos.split(",").map(&:strip)
-        colors = [:blue, :green, :magenta]
+        repo_list = repos.split(/\s+/)
+        repo_colors = Commands.generate_colors_for_repos(repo_list)
 
-        repo_list.each_with_index do |repo, index|
-          color = colors[index % colors.length]
+        repo_list.each do |repo|
+          color = repo_colors[repo]
           puts "\n#{Rainbow("--- #{repo.upcase} ---").color(color).bold}"
           search_query = "repo:artsy/#{repo} is:pr in:title Deploy"
 
@@ -67,9 +81,8 @@ module Deployz
     class Timeline < Dry::CLI::Command
       desc "Show Deploy PRs in a visual timeline format"
 
-      option :repos, type: :string, default: "gravity,metaphysics,force", desc: "Comma-separated list of repos"
-
-      def call(repos: nil, **)
+      def call(**)
+        repos = Commands.get_repos_input
         puts Rainbow("Creating timeline for: #{repos}").cyan
 
         token = ENV["GITHUB_TOKEN"]
@@ -80,12 +93,8 @@ module Deployz
           client = Octokit::Client.new
         end
 
-        repo_list = repos.split(",").map(&:strip)
-        repo_colors = {
-          "gravity" => :blue,
-          "metaphysics" => :green,
-          "force" => :magenta
-        }
+        repo_list = repos.split(/\s+/)
+        repo_colors = Commands.generate_colors_for_repos(repo_list)
 
         indent_size = 12
         repo_indents = {}
