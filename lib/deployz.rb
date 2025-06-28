@@ -8,7 +8,11 @@ module Deployz
   module Commands
     extend Dry::CLI::Registry
 
-    def self.get_repos_input
+    def self.get_repos_input(provided_repos = nil)
+      if provided_repos && !provided_repos.empty?
+        return provided_repos.join(" ")
+      end
+      
       print "Which repos? (default: gravity metaphysics force): "
       input = $stdin.gets.chomp
       input.empty? ? "gravity metaphysics force" : input
@@ -35,10 +39,12 @@ module Deployz
 
     class List < Dry::CLI::Command
       desc "List recent Deploy PRs for Artsy repos"
+      
+      argument :repos, type: :array, required: false, desc: "Repository names"
 
-      def call(**)
-        repos = Commands.get_repos_input
-        puts Rainbow("Fetching Deploy PRs for: #{repos}").cyan
+      def call(repos: nil, **)
+        repos_string = Commands.get_repos_input(repos)
+        puts Rainbow("Fetching Deploy PRs for: #{repos_string}").cyan
 
         token = ENV["GITHUB_TOKEN"]
         if token
@@ -47,7 +53,7 @@ module Deployz
           puts Rainbow("Warning: No GITHUB_TOKEN found. Private repos may not be accessible.").yellow
           client = Octokit::Client.new
         end
-        repo_list = repos.split(/\s+/)
+        repo_list = repos_string.split(/\s+/)
         repo_colors = Commands.generate_colors_for_repos(repo_list)
 
         repo_list.each do |repo|
@@ -80,10 +86,12 @@ module Deployz
 
     class Timeline < Dry::CLI::Command
       desc "Show Deploy PRs in a visual timeline format"
+      
+      argument :repos, type: :array, required: false, desc: "Repository names"
 
-      def call(**)
-        repos = Commands.get_repos_input
-        puts Rainbow("Creating timeline for: #{repos}").cyan
+      def call(repos: nil, **)
+        repos_string = Commands.get_repos_input(repos)
+        puts Rainbow("Creating timeline for: #{repos_string}").cyan
 
         token = ENV["GITHUB_TOKEN"]
         if token
@@ -93,7 +101,7 @@ module Deployz
           client = Octokit::Client.new
         end
 
-        repo_list = repos.split(/\s+/)
+        repo_list = repos_string.split(/\s+/)
         repo_colors = Commands.generate_colors_for_repos(repo_list)
 
         indent_size = 12
@@ -162,7 +170,13 @@ module Deployz
 
   class CLI
     def self.start(args)
-      Dry::CLI.new(Commands).call
+      # Check if args contain repo names (no command specified)
+      if args.length > 0 && !%w[list timeline version l t].include?(args[0])
+        # Default to list command with repo args
+        args.unshift("list")
+      end
+
+      Dry::CLI.new(Commands).call(arguments: args)
     end
   end
 end
