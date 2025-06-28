@@ -153,7 +153,7 @@ module Deployz
           end
 
           time = pr.created_at.strftime("%H:%M")
-          pipe = Rainbow("| ").color(color).bold
+          pipe = Rainbow("┃ ").color(color).bold.faint
 
           puts "#{Rainbow(time).faint}#{indent}#{pipe}#{Rainbow(pr.html_url).color(color).bright}"
         end
