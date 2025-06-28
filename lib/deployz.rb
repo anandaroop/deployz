@@ -119,7 +119,6 @@ module Deployz
         current_date = nil
         all_prs.each do |item|
           pr = item[:pr]
-          repo = item[:repo]
           color = item[:color]
 
           pr_date = pr.created_at.strftime("%Y-%m-%d")
@@ -129,11 +128,8 @@ module Deployz
           end
 
           time = pr.created_at.strftime("%H:%M")
-          repo_tag = Rainbow("[#{repo.upcase}]").color(color).bold
-          title = (pr.title.length > 50) ? "#{pr.title[0...47]}..." : pr.title
 
-          puts "#{Rainbow(time).faint} #{repo_tag} #{title}"
-          puts "#{" " * 8}#{Rainbow(pr.html_url).color(color).bright}"
+          puts "#{Rainbow(time).faint} #{Rainbow(pr.html_url).color(color).bright}"
           puts
         end
 
