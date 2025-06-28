@@ -1,6 +1,7 @@
 require "dry/cli"
 require "octokit"
 require "rainbow"
+require "date"
 
 module Deployz
   VERSION = "0.1.0"
@@ -41,10 +42,11 @@ module Deployz
       desc "List recent Deploy PRs for Artsy repos"
 
       argument :repos, type: :array, required: false, desc: "Repository names"
+      option :days, type: :integer, default: 10, desc: "Number of days to look back"
 
-      def call(repos: nil, **)
+      def call(repos: nil, days: 10, **)
         repos_string = Commands.get_repos_input(repos)
-        puts Rainbow("Fetching Deploy PRs for: #{repos_string}").cyan
+        puts Rainbow("Fetching Deploy PRs for: #{repos_string} (last #{days} days)").cyan
 
         token = ENV["GITHUB_TOKEN"]
         if token
@@ -56,10 +58,12 @@ module Deployz
         repo_list = repos_string.split(/\s+/)
         repo_colors = Commands.generate_colors_for_repos(repo_list)
 
+        date_range = (Date.today - days.to_i).strftime("%Y-%m-%d")
+
         repo_list.each do |repo|
           color = repo_colors[repo]
           puts "\n#{Rainbow("--- #{repo.upcase} ---").color(color).bold}"
-          search_query = "repo:artsy/#{repo} is:pr in:title Deploy"
+          search_query = "repo:artsy/#{repo} is:pr in:title Deploy created:>=#{date_range}"
 
           begin
             results = client.search_issues(search_query, sort: "created", order: "desc")
@@ -67,7 +71,7 @@ module Deployz
             if results.items.empty?
               puts Rainbow("  No Deploy PRs found").yellow
             else
-              results.items.first(10).each do |pr|
+              results.items.each do |pr|
                 pr_url = Rainbow(pr.html_url).bright.color(color)
                 date = Rainbow(pr.created_at.strftime("%Y-%m-%d %H:%M")).faint
                 puts "  #{date} - #{pr.title} #{pr_url}"
@@ -88,10 +92,11 @@ module Deployz
       desc "Show Deploy PRs in a visual timeline format"
 
       argument :repos, type: :array, required: false, desc: "Repository names"
+      option :days, type: :integer, default: 10, desc: "Number of days to look back"
 
-      def call(repos: nil, **)
+      def call(repos: nil, days: 10, **)
         repos_string = Commands.get_repos_input(repos)
-        puts Rainbow("Creating timeline for: #{repos_string}").cyan
+        puts Rainbow("Creating timeline for: #{repos_string} (last #{days} days)").cyan
 
         token = ENV["GITHUB_TOKEN"]
         if token
@@ -103,6 +108,7 @@ module Deployz
 
         repo_list = repos_string.split(/\s+/)
         repo_colors = Commands.generate_colors_for_repos(repo_list)
+        date_range = (Date.today - days.to_i).strftime("%Y-%m-%d")
 
         indent_size = 12
         repo_indents = {}
@@ -113,12 +119,12 @@ module Deployz
         all_prs = []
 
         repo_list.each do |repo|
-          search_query = "repo:artsy/#{repo} is:pr in:title Deploy"
+          search_query = "repo:artsy/#{repo} is:pr in:title Deploy created:>=#{date_range}"
 
           begin
             results = client.search_issues(search_query, sort: "created", order: "desc")
 
-            results.items.first(20).each do |pr|
+            results.items.each do |pr|
               all_prs << {
                 repo: repo,
                 pr: pr,
