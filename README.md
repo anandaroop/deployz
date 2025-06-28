@@ -1,6 +1,15 @@
 # Deployz
 
+
+
 A CLI tool to view recent deployment PRs for Artsy repositories with both interactive and non-interactive modes.
+
+Output looks like this
+
+|List view|Timeline view|
+|---|---|
+|<img alt="list" src="https://github.com/user-attachments/assets/d02ed2d3-cd11-4186-b102-90b0b5751555" />|<img alt="timeline" src="https://github.com/user-attachments/assets/7b920966-0955-4537-b8db-3a2d329a1f39" />|
+
 
 ## Installation
 
