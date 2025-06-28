@@ -32,16 +32,35 @@ module Deployz
       desc "Show recent deployments for Artsy repos"
 
       def call(*)
-        puts "Hello from Deployz!"
-        puts "This will show recent deployments for Artsy repos."
-        puts "Try: deployz list"
+        puts Rainbow("Deployz - Recent deployment PRs for Artsy repos").bold.cyan
+        puts ""
+        puts "Usage:"
+        puts "  deployz [COMMAND] [REPOS...] [OPTIONS]"
+        puts ""
+        puts "Commands:"
+        puts "  list (l)      List Deploy PRs grouped by repository"
+        puts "  timeline (t)  Show Deploy PRs in chronological timeline"
+        puts "  version       Show version information"
+        puts ""
+        puts "Examples:"
+        puts "  deployz                                    # Interactive mode"
+        puts "  deployz gravity metaphysics force         # Non-interactive list"
+        puts "  deployz list gravity --days 7             # List with date filter"
+        puts "  deployz timeline metaphysics force        # Timeline view"
+        puts "  deployz t gravity --days 30               # Timeline alias"
+        puts ""
+        puts "Options:"
+        puts "  --days N      Number of days to look back (default: 10)"
+        puts ""
+        puts "Setup:"
+        puts "  Set GITHUB_TOKEN environment variable for private repo access"
       end
     end
 
     class List < Dry::CLI::Command
       desc "List recent Deploy PRs for Artsy repos"
 
-      argument :repos, type: :array, required: false, desc: "Repository names"
+      argument :repos, type: :array, required: false, desc: "Repository names (space-delimited)"
       option :days, type: :integer, default: 10, desc: "Number of days to look back"
 
       def call(repos: nil, days: 10, **)
@@ -91,7 +110,7 @@ module Deployz
     class Timeline < Dry::CLI::Command
       desc "Show Deploy PRs in a visual timeline format"
 
-      argument :repos, type: :array, required: false, desc: "Repository names"
+      argument :repos, type: :array, required: false, desc: "Repository names (space-delimited)"
       option :days, type: :integer, default: 10, desc: "Number of days to look back"
 
       def call(repos: nil, days: 10, **)
@@ -177,8 +196,17 @@ module Deployz
 
   class CLI
     def self.start(args)
+      # Handle help flags at top level
+      if args.include?("--help") || args.include?("-h")
+        if args.length == 1 || (args.length == 2 && args[0] == "version")
+          # Show default help when just --help or version --help
+          Commands::Default.new.call
+          return
+        end
+      end
+
       # Check if args contain repo names (no command specified)
-      if args.length > 0 && !%w[list timeline version l t].include?(args[0])
+      if args.length > 0 && !%w[list timeline version l t --help -h].include?(args[0])
         # Default to list command with repo args
         args.unshift("list")
       end

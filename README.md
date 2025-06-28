@@ -1,6 +1,6 @@
 # Deployz
 
-A CLI tool to view recent deployment PRs for Artsy repositories.
+A CLI tool to view recent deployment PRs for Artsy repositories with both interactive and non-interactive modes.
 
 ## Installation
 
@@ -39,41 +39,66 @@ export GITHUB_TOKEN=your_token_here
 
 ## Usage
 
-### List recent Deploy PRs (default repos: gravity, metaphysics, force)
+### Interactive Mode (prompts for repo selection)
 
 ```bash
 ./bin/deployz list
+./bin/deployz timeline
 ```
 
-### List Deploy PRs for specific repositories
+### Non-Interactive Mode (specify repos directly)
 
 ```bash
-./bin/deployz list --repos metaphysics,force
-./bin/deployz list --repos gravity
+# Defaults to list command
+./bin/deployz gravity metaphysics force
+
+# Explicit commands
+./bin/deployz list gravity metaphysics force
+./bin/deployz timeline metaphysics force
+
+# With date filtering
+./bin/deployz list gravity --days 7
+./bin/deployz timeline metaphysics force --days 30
 ```
 
-### Show help
+### Command Aliases
 
 ```bash
-./bin/deployz version
-./bin/deployz list --help
+./bin/deployz l           # list alias
+./bin/deployz t           # timeline alias
 ```
 
-## Output
+### Options
 
-The tool displays Deploy PRs with:
+- `--days N` - Number of days to look back (default: 10)
+- Repository names are space-delimited (not comma-delimited)
 
-- Timestamps at the beginning for chronological scanning
-- Colored repo section headers (blue, green, magenta)
-- Clickable GitHub URLs (cmd+click in Terminal.app)
-- Error handling for private repos without authentication
+## Commands
+
+### List Command
+Shows Deploy PRs grouped by repository with colored section headers.
+
+### Timeline Command  
+Shows Deploy PRs in chronological order with:
+- Colored vertical columns for each repository
+- Staggered indentation for visual separation
+- Box drawing characters (┃) for clear column tracking
+
+## Output Features
+
+- **Timestamps** at the beginning for chronological scanning
+- **Colored output** with distinct colors per repository
+- **Clickable GitHub URLs** (cmd+click in Terminal.app)
+- **Date range filtering** for consistent time windows
+- **Error handling** for private repos without authentication
 
 ## Examples
 
-With GitHub token configured:
+### List Command
 
 ```
-Fetching Deploy PRs for: gravity,metaphysics,force
+$ ./bin/deployz list gravity metaphysics --days 5
+Fetching Deploy PRs for: gravity metaphysics (last 5 days)
 
 --- GRAVITY ---
   2025-06-27 07:42 - Deploy https://github.com/artsy/gravity/pull/1234
@@ -84,11 +109,42 @@ Fetching Deploy PRs for: gravity,metaphysics,force
   2025-06-26 16:52 - Deploy https://github.com/artsy/metaphysics/pull/6855
 ```
 
-Without GitHub token:
+### Timeline Command
+
+```
+$ ./bin/deployz timeline metaphysics force --days 7
+Creating timeline for: metaphysics force (last 7 days)
+
+Deploy Timeline
+────────────────────────────────────────────────────────────────────────────────
+07:42            ┃ https://github.com/artsy/metaphysics/pull/6858
+2025-06-26
+17:02                        ┃ https://github.com/artsy/force/pull/15776
+16:52            ┃ https://github.com/artsy/metaphysics/pull/6855
+```
+
+### Interactive Mode
+
+```
+$ ./bin/deployz timeline
+Which repos? (default: gravity metaphysics force): metaphysics force
+Creating timeline for: metaphysics force (last 10 days)
+...
+```
+
+### Without GitHub Token
 
 ```
 Warning: No GITHUB_TOKEN found. Private repos may not be accessible.
 
 --- GRAVITY ---
   Private repo - requires GITHUB_TOKEN with access
+```
+
+## Development
+
+### Code Quality
+```bash
+bundle exec standardrb        # Check code style
+bundle exec standardrb --fix  # Auto-fix issues
 ```

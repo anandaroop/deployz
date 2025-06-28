@@ -1,31 +1,48 @@
 # Deployz
 
-This CLI's purpose is to inform the user of recently deployed projects at Artsy
+A CLI tool to view recent deployment PRs for Artsy repositories with both interactive and non-interactive modes.
 
-It provides a terminal-friendly and easily grokked alternative to visiting an URL such as https://github.com/search?q=org%3Aartsy+is%3Apr+in%3Atitle+Deploy&type=pullrequests&s=created&o=desc&p=5
+Provides a terminal-friendly alternative to visiting GitHub search URLs for Deploy PRs.
 
 ## Stack
 
 - Language: Ruby
-- Framework: Dry
+- Framework: Dry CLI
+- Dependencies: octokit, rainbow, pastel
 - Code quality: StandardRB
+
+## Features
+
+- **Two commands**: `list` (repo-separated view) and `timeline` (chronological view)
+- **Interactive mode**: Prompts for repo selection
+- **Non-interactive mode**: Pass repos as arguments
+- **Date filtering**: `--days N` option (default: 10 days)
+- **GitHub authentication**: GITHUB_TOKEN support for private repos
+- **Colorized output**: Each repo has distinct colors
+- **Visual timeline**: Box drawing characters create clear columns
+
+## Commands
+
+### List Command
+- `deployz list` - Interactive repo selection
+- `deployz list gravity metaphysics force` - Specific repos
+- `deployz list --days 7` - Last 7 days
+- Shows Deploy PRs grouped by repository
+
+### Timeline Command  
+- `deployz timeline` - Interactive repo selection
+- `deployz timeline metaphysics force --days 30` - Specific repos, 30 days
+- Shows chronological timeline with colored vertical columns
+- Each repo has staggered indentation for visual separation
+
+### Shortcuts
+- `deployz gravity metaphysics` - Defaults to list command
+- `deployz l` - List alias
+- `deployz t` - Timeline alias
 
 ## Conventions
 
 - No fancy metaprogramming
 - Lint after each change, and use autofixing
-- Use convention commit formatting for commit messages
-
-## Example session
-
-```sh
-> deployz
-
-Which repos (default: gravity,metaphysics,force):
-
-Retrieving deploy PRs for gravity, metaphysics and force.
-
-[fetch via Github API the equivalent of `org:artsy is:pr in:title Deploy` sorted by reverse chron, for the last week]
-
-[visualize in a terminal-friendly vertical timeline that shows each repo in its own color and column, with some kind of marker to indicate when it was deployed]
-```
+- Use conventional commit formatting for commit messages
+- Space-delimited repo names (not comma-delimited)
