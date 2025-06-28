@@ -25,8 +25,6 @@ GEM
     parser (3.3.8.0)
       ast (~> 2.4.1)
       racc
-    pastel (0.8.0)
-      tty-color (~> 0.5)
     prism (1.4.0)
     public_suffix (6.0.2)
     racc (1.8.1)
@@ -66,7 +64,6 @@ GEM
     standard-performance (1.8.0)
       lint_roller (~> 1.1)
       rubocop-performance (~> 1.25.0)
-    tty-color (0.6.0)
     unicode-display_width (3.1.4)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
@@ -79,7 +76,6 @@ DEPENDENCIES
   dotenv (~> 3.0)
   dry-cli (~> 1.0)
   octokit (~> 6.0)
-  pastel (~> 0.8)
   rainbow (~> 3.1)
   standard (~> 1.0)
 

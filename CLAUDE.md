@@ -8,7 +8,7 @@ Provides a terminal-friendly alternative to visiting GitHub search URLs for Depl
 
 - Language: Ruby
 - Framework: Dry CLI
-- Dependencies: octokit, rainbow, pastel
+- Dependencies: octokit, rainbow, dotenv
 - Code quality: StandardRB
 
 ## Features
