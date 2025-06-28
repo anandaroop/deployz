@@ -1,3 +1,4 @@
+require "dotenv/load"
 require "dry/cli"
 require "octokit"
 require "rainbow"
@@ -53,7 +54,7 @@ module Deployz
         puts "  --days N      Number of days to look back (default: 10)"
         puts ""
         puts "Setup:"
-        puts "  Set GITHUB_TOKEN environment variable for private repo access"
+        puts "  Copy .env.example to .env and set your GITHUB_TOKEN for private repo access"
       end
     end
 

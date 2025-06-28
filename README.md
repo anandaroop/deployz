@@ -27,6 +27,16 @@ To access private repositories like `gravity`, you need a GitHub personal access
 
 ### Configuring the Token
 
+**Option 1: Local .env file (recommended)**
+
+1. Copy the example file: `cp .env.example .env`
+2. Edit `.env` and replace `your_token_here` with your actual token:
+   ```
+   GITHUB_TOKEN=ghp_your_actual_token_here
+   ```
+
+**Option 2: Environment variable**
+
 Set the `GITHUB_TOKEN` environment variable:
 
 ```bash
