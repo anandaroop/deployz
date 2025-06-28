@@ -64,8 +64,88 @@ module Deployz
       end
     end
 
+    class Timeline < Dry::CLI::Command
+      desc "Show Deploy PRs in a visual timeline format"
+
+      option :repos, type: :string, default: "gravity,metaphysics,force", desc: "Comma-separated list of repos"
+
+      def call(repos: nil, **)
+        puts Rainbow("Creating timeline for: #{repos}").cyan
+
+        token = ENV["GITHUB_TOKEN"]
+        if token
+          client = Octokit::Client.new(access_token: token)
+        else
+          puts Rainbow("Warning: No GITHUB_TOKEN found. Private repos may not be accessible.").yellow
+          client = Octokit::Client.new
+        end
+
+        repo_list = repos.split(",").map(&:strip)
+        repo_colors = {
+          "gravity" => :blue,
+          "metaphysics" => :green,
+          "force" => :magenta
+        }
+
+        all_prs = []
+
+        repo_list.each do |repo|
+          search_query = "repo:artsy/#{repo} is:pr in:title Deploy"
+
+          begin
+            results = client.search_issues(search_query, sort: "created", order: "desc")
+
+            results.items.first(20).each do |pr|
+              all_prs << {
+                repo: repo,
+                pr: pr,
+                color: repo_colors[repo] || :white
+              }
+            end
+          rescue Octokit::Error => e
+            if e.message.include?("permission") || e.message.include?("cannot be searched")
+              puts Rainbow("Warning: #{repo} is private - requires GITHUB_TOKEN with access").yellow
+            else
+              puts Rainbow("Error fetching PRs for #{repo}: #{e.message}").red
+            end
+          end
+        end
+
+        all_prs.sort_by! { |item| item[:pr].created_at }.reverse!
+
+        puts "\n#{Rainbow("Deploy Timeline").bold}"
+        puts Rainbow("─" * 80).faint
+
+        current_date = nil
+        all_prs.each do |item|
+          pr = item[:pr]
+          repo = item[:repo]
+          color = item[:color]
+
+          pr_date = pr.created_at.strftime("%Y-%m-%d")
+          if current_date != pr_date
+            puts "\n#{Rainbow(pr_date).bold.underline}" if current_date
+            current_date = pr_date
+          end
+
+          time = pr.created_at.strftime("%H:%M")
+          repo_tag = Rainbow("[#{repo.upcase}]").color(color).bold
+          title = (pr.title.length > 50) ? "#{pr.title[0...47]}..." : pr.title
+
+          puts "#{Rainbow(time).faint} #{repo_tag} #{title}"
+          puts "#{" " * 8}#{Rainbow(pr.html_url).color(color).bright}"
+          puts
+        end
+
+        if all_prs.empty?
+          puts Rainbow("No Deploy PRs found").yellow
+        end
+      end
+    end
+
     register "version", Default, aliases: ["", "default"]
     register "list", List, aliases: ["l"]
+    register "timeline", Timeline, aliases: ["t"]
   end
 
   class CLI
