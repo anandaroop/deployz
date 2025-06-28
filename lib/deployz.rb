@@ -12,7 +12,7 @@ module Deployz
       if provided_repos && !provided_repos.empty?
         return provided_repos.join(" ")
       end
-      
+
       print "Which repos? (default: gravity metaphysics force): "
       input = $stdin.gets.chomp
       input.empty? ? "gravity metaphysics force" : input
@@ -39,7 +39,7 @@ module Deployz
 
     class List < Dry::CLI::Command
       desc "List recent Deploy PRs for Artsy repos"
-      
+
       argument :repos, type: :array, required: false, desc: "Repository names"
 
       def call(repos: nil, **)
@@ -86,7 +86,7 @@ module Deployz
 
     class Timeline < Dry::CLI::Command
       desc "Show Deploy PRs in a visual timeline format"
-      
+
       argument :repos, type: :array, required: false, desc: "Repository names"
 
       def call(repos: nil, **)
@@ -148,13 +148,14 @@ module Deployz
 
           pr_date = pr.created_at.strftime("%Y-%m-%d")
           if current_date != pr_date
-            puts "\n#{Rainbow(pr_date).bold.underline}" if current_date
+            puts Rainbow(pr_date).bold.underline if current_date
             current_date = pr_date
           end
 
           time = pr.created_at.strftime("%H:%M")
+          pipe = Rainbow("| ").color(color).bold
 
-          puts "#{Rainbow(time).faint}#{indent}#{Rainbow(pr.html_url).color(color).bright}"
+          puts "#{Rainbow(time).faint}#{indent}#{pipe}#{Rainbow(pr.html_url).color(color).bright}"
         end
 
         if all_prs.empty?
